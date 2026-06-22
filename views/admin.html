@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - RetroPlay</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #0d0e12;
+            color: #e2e8f0;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .navbar {
+            background-color: #15171e !important;
+            border-bottom: 1px solid #242936;
+        }
+
+        .panel-card,
+        .sidebar-form,
+        .inventory-card {
+            background-color: #15171e;
+            border: 1px solid #242936;
+            border-radius: 10px;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: #1e2230;
+            border: 1px solid #2d3349;
+            color: #fff;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: #1e2230;
+            color: #fff;
+            border-color: #ffc107;
+            box-shadow: none;
+        }
+        
+        .form-select:disabled {
+            background-color: #15171e;
+            opacity: 0.6;
+        }
+
+        .table img {
+            width: 50px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #343a40;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body data-bs-theme="dark">
+
+    <nav class="navbar navbar-dark sticky-top shadow-sm">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand fw-bold fs-4 text-white">🛠️ Panel Admin - RetroPlay</span>
+            <div class="d-flex align-items-center">
+                <a href="/" class="btn btn-outline-light btn-sm me-2">Ver Catálogo</a>
+                <a href="/api/logout" class="btn btn-outline-warning btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid my-4 px-4">
+
+        <div id="mensaje" class="alert d-none"></div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="panel-card p-3">
+                    <span class="text-white-50">Total productos</span>
+                    <div class="stat-number text-warning" id="total-productos">0</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="panel-card p-3">
+                    <span class="text-white-50">Videojuegos</span>
+                    <div class="stat-number text-info" id="total-juegos">0</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="panel-card p-3">
+                    <span class="text-white-50">Consolas</span>
+                    <div class="stat-number text-success" id="total-consolas">0</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="panel-card p-3">
+                    <span class="text-white-50">Stock total</span>
+                    <div class="stat-number text-light" id="stock-total">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="sidebar-form shadow p-4">
+                    <h5 class="fw-bold mb-3 text-white" id="titulo-form">🛠️ Nuevo Producto</h5>
+
+                    <form id="game-form">
+                        <input type="hidden" id="game-id">
+
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">Título / Artículo</label>
+                            <input type="text" id="titulo" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">Tipo de Artículo</label>
+                            <select id="tipo" class="form-select" required>
+                                <option value="Juego">Juego</option>
+                                <option value="Consola">Consola</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">Consola / Plataforma</label>
+                            <select id="consola" class="form-select" required>
+                                <option value="NES">NES</option>
+                                <option value="SNES">SNES</option>
+                                <option value="N64">N64</option>
+                                <option value="PS1">PS1</option>
+                                <option value="Sega Genesis">Sega Genesis</option>
+                                <option value="Game Boy">Game Boy</option>
+                                <option value="Atari">Atari</option>
+                                <option value="Propia">Misma Consola / Hardware</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">Enlace de Imagen</label>
+                            <input type="url" id="imagen_url" class="form-control"
+                                placeholder="https://link-de-la-imagen.jpg" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">Stock</label>
+                            <input type="number" id="stock" class="form-control" min="0" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small text-white-50">Precio Arriendo Usado</label>
+                            <input type="number" id="precio_arriendo" class="form-control" min="0" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small text-white-50">Precio Venta Excelente</label>
+                            <input type="number" id="precio_venta" class="form-control" min="0" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning w-100 fw-bold py-2 mb-2" id="btn-save">
+                            GUARDAR PRODUCTO
+                        </button>
+
+                        <button type="button" class="btn btn-danger w-100 fw-bold py-2 d-none" id="btn-cancel"
+                            onclick="resetForm()">
+                            CANCELAR EDICIÓN
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div class="inventory-card shadow-sm p-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                        <h5 class="fw-bold text-white m-0">📊 Inventario de RetroPlay</h5>
+
+                        <input type="text" id="buscador" class="form-control w-100 w-md-50"
+                            placeholder="Buscar producto..." oninput="filtrarTabla()">
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="text-white-50 small">
+                                    <th>Foto</th>
+                                    <th>Artículo</th>
+                                    <th>Tipo</th>
+                                    <th>Plataforma</th>
+                                    <th>Stock</th>
+                                    <th>Arriendo</th>
+                                    <th>Venta</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="tabla-inventario">
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-white-50">
+                                        Cargando inventario...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const gameForm = document.getElementById('game-form');
+        const tablaInventario = document.getElementById('tabla-inventario');
+        const selectTipo = document.getElementById('tipo');
+        const selectConsola = document.getElementById('consola');
+        const imagenDefault = 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=100';
+
+        let inventario = [];
+
+        document.addEventListener('DOMContentLoaded', cargarInventario);
+
+        // --- AJUSTE LÓGICO DEL FORMULARIO ---
+        // Si seleccionan "Consola", bloqueamos la plataforma para que no sea redundante
+        selectTipo.addEventListener('change', () => {
+            if (selectTipo.value === 'Consola') {
+                selectConsola.value = 'Propia';
+                selectConsola.disabled = true; // Bloquea el select
+            } else {
+                selectConsola.disabled = false; // Lo vuelve a habilitar si es un Juego
+                if(selectConsola.value === 'Propia') selectConsola.value = 'NES'; // Resetea a un juego válido
+            }
+        });
+
+        async function cargarInventario() {
+            try {
+                const res = await fetch('/api/juegos');
+
+                if (!res.ok) {
+                    throw new Error('No se pudo cargar el inventario.');
+                }
+
+                inventario = await res.json();
+                renderizarTabla(inventario);
+                actualizarDashboard(inventario);
+
+            } catch (error) {
+                tablaInventario.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-danger py-4">
+                            Error al cargar inventario. Revisa el servidor.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function renderizarTabla(juegos) {
+            tablaInventario.innerHTML = '';
+
+            if (juegos.length === 0) {
+                tablaInventario.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-white-50">
+                            No hay productos registrados.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            juegos.forEach(juego => {
+                let imgUrl = juego.imagen_url || juego.genero || '';
+                imgUrl = imgUrl.trim();
+
+                if (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://')) {
+                    imgUrl = imagenDefault;
+                }
+
+                const stockClass = Number(juego.stock) > 0 ? 'text-success' : 'text-danger';
+                
+                // Pequeño ajuste visual para que se vea mejor si es "Propia"
+                const textoConsola = juego.consola === 'Propia' ? 'Hardware Físico' : juego.consola;
+
+                tablaInventario.innerHTML += `
+                    <tr>
+                        <td>
+                            <img src="${imgUrl}" onerror="this.src='${imagenDefault}'" alt="${juego.titulo}">
+                        </td>
+
+                        <td class="fw-bold text-light">${juego.titulo}</td>
+                        <td class="text-white-50">${juego.tipo}</td>
+
+                        <td>
+                            <span class="badge bg-dark text-light border border-secondary">
+                                ${textoConsola}
+                            </span>
+                        </td>
+
+                        <td class="${stockClass} fw-bold">${juego.stock}</td>
+
+                        <td class="text-white-50">
+                            $${Number(juego.precio_arriendo_usado || 0).toLocaleString('es-CL')} CLP
+                        </td>
+
+                        <td class="fw-bold text-warning">
+                            $${Number(juego.precio_venta_excelente || 0).toLocaleString('es-CL')} CLP
+                        </td>
+
+                        <td>
+                            <button class="btn btn-sm btn-outline-warning me-2"
+                                onclick='prepararEditar(${JSON.stringify(juego)})'>
+                                Editar
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-danger"
+                                onclick="eliminarJuego(${juego.id})">
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function actualizarDashboard(juegos) {
+            const totalProductos = juegos.length;
+            const totalJuegos = juegos.filter(j => j.tipo === 'Juego').length;
+            const totalConsolas = juegos.filter(j => j.tipo === 'Consola').length;
+            const stockTotal = juegos.reduce((total, j) => total + Number(j.stock || 0), 0);
+
+            document.getElementById('total-productos').textContent = totalProductos;
+            document.getElementById('total-juegos').textContent = totalJuegos;
+            document.getElementById('total-consolas').textContent = totalConsolas;
+            document.getElementById('stock-total').textContent = stockTotal;
+        }
+
+        function filtrarTabla() {
+            const busqueda = document.getElementById('buscador').value.toLowerCase().trim();
+
+            const filtrados = inventario.filter(juego =>
+                (juego.titulo || '').toLowerCase().includes(busqueda) ||
+                (juego.tipo || '').toLowerCase().includes(busqueda) ||
+                (juego.consola || '').toLowerCase().includes(busqueda)
+            );
+
+            renderizarTabla(filtrados);
+        }
+
+        gameForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('game-id').value;
+
+            const data = {
+                titulo: document.getElementById('titulo').value.trim(),
+                tipo: document.getElementById('tipo').value,
+                // Extraemos el valor, incluso si el select está disabled
+                consola: document.getElementById('consola').value,
+                genero: document.getElementById('imagen_url').value.trim(),
+                imagen_url: document.getElementById('imagen_url').value.trim(),
+                stock: Number(document.getElementById('stock').value),
+                precio_arriendo_usado: Number(document.getElementById('precio_arriendo').value),
+                precio_venta_excelente: Number(document.getElementById('precio_venta').value)
+            };
+
+            if (!validarFormulario(data)) return;
+
+            const url = id ? `/api/juegos/${id}` : '/api/juegos';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) {
+                    throw new Error('Error al guardar.');
+                }
+
+                mostrarMensaje(id ? 'Producto actualizado correctamente.' : 'Producto agregado correctamente.', 'success');
+
+                resetForm();
+                cargarInventario();
+
+            } catch (error) {
+                mostrarMensaje('No se pudo guardar el producto. Revisa el servidor.', 'danger');
+            }
+        });
+
+        function validarFormulario(data) {
+            if (!data.titulo) {
+                mostrarMensaje('El título es obligatorio.', 'danger');
+                return false;
+            }
+
+            if (!data.imagen_url.startsWith('http://') && !data.imagen_url.startsWith('https://')) {
+                mostrarMensaje('El enlace de imagen debe comenzar con http:// o https://', 'danger');
+                return false;
+            }
+
+            if (data.stock < 0 || data.precio_arriendo_usado < 0 || data.precio_venta_excelente < 0) {
+                mostrarMensaje('Stock y precios no pueden ser negativos.', 'danger');
+                return false;
+            }
+
+            return true;
+        }
+
+        function prepararEditar(juego) {
+            document.getElementById('game-id').value = juego.id;
+            document.getElementById('titulo').value = juego.titulo;
+            document.getElementById('tipo').value = juego.tipo;
+            
+            // Disparamos el evento para que bloquee el select si es necesario
+            document.getElementById('tipo').dispatchEvent(new Event('change'));
+            
+            document.getElementById('consola').value = juego.consola;
+            document.getElementById('imagen_url').value = juego.imagen_url || juego.genero || '';
+            document.getElementById('stock').value = juego.stock;
+            document.getElementById('precio_arriendo').value = juego.precio_arriendo_usado;
+            document.getElementById('precio_venta').value = juego.precio_venta_excelente;
+
+            document.getElementById('btn-cancel').classList.remove('d-none');
+            document.getElementById('btn-save').textContent = 'ACTUALIZAR PRODUCTO';
+            document.getElementById('titulo-form').textContent = '✏️ Editar Producto';
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function eliminarJuego(id) {
+            const confirmar = confirm('¿Seguro que deseas eliminar este producto? Esta acción no se puede deshacer.');
+
+            if (!confirmar) return;
+
+            try {
+                const res = await fetch(`/api/juegos/${id}`, { method: 'DELETE' });
+
+                if (!res.ok) {
+                    throw new Error('Error al eliminar.');
+                }
+
+                mostrarMensaje('Producto eliminado correctamente.', 'success');
+                cargarInventario();
+
+            } catch (error) {
+                mostrarMensaje('No se pudo eliminar el producto.', 'danger');
+            }
+        }
+
+        function resetForm() {
+            gameForm.reset();
+            document.getElementById('game-id').value = '';
+            
+            // Aseguramos que vuelva a estar habilitado por defecto
+            document.getElementById('consola').disabled = false;
+            
+            document.getElementById('btn-cancel').classList.add('d-none');
+            document.getElementById('btn-save').textContent = 'GUARDAR PRODUCTO';
+            document.getElementById('titulo-form').textContent = '🛠️ Nuevo Producto';
+        }
+
+        function mostrarMensaje(texto, tipo) {
+            const mensaje = document.getElementById('mensaje');
+
+            mensaje.className = `alert alert-${tipo}`;
+            mensaje.textContent = texto;
+            mensaje.classList.remove('d-none');
+
+            setTimeout(() => {
+                mensaje.classList.add('d-none');
+            }, 3500);
+        }
+    </script>
+
+</body>
+
+</html>

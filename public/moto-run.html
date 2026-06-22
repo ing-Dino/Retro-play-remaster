@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Moto Runner xddd</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #contenedor {
+            position: relative;
+            width: 800px;
+            height: 250px;
+            background-color: white;
+            border-bottom: 2px solid #535353;
+            overflow: hidden;
+        }
+        #moto {
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            width: 50px;
+            height: 50px;
+            background-color: #ff4444; /* Rojo: Motoquero */
+            border-radius: 5px;
+        }
+        .obstaculo {
+            position: absolute;
+            bottom: 0;
+        }
+        .cactus {
+            width: 30px;
+            height: 50px;
+            background-color: #228b22; /* Verde: Cactus */
+        }
+        .rampa {
+            width: 60px;
+            height: 30px;
+            background-color: #888888; /* Gris: Rampa */
+            clip-path: polygon(0 100%, 100% 100%, 100% 0);
+        }
+        #puntaje {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 20px;
+            color: #535353;
+            font-weight: bold;
+        }
+        #mensaje-inicio {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            color: #535353;
+        }
+        .saltando {
+            animation: saltar 0.6s linear;
+        }
+        @keyframes saltar {
+            0% { bottom: 0; }
+            30% { bottom: 100px; }
+            70% { bottom: 100px; }
+            100% { bottom: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="contenedor">
+        <div id="puntaje">00000</div>
+        <div id="moto"></div>
+        <div id="mensaje-inicio">Presiona ESPACIO para empezar</div>
+    </div>
+
+    <script>
+        const contenedor = document.getElementById('contenedor');
+        const moto = document.getElementById('moto');
+        const puntajeTexto = document.getElementById('puntaje');
+        const mensajeInicio = document.getElementById('mensaje-inicio');
+        
+        let jugando = false;
+        let puntaje = 0;
+        let loopJuego;
+        let loopObstaculos;
+        let loopPuntaje;
+        let velocidad = 6;
+
+        function saltar(e) {
+            if (e.code === 'Space') {
+                if (!jugando) {
+                    empezarJuego();
+                    return;
+                }
+                if (!moto.classList.contains('saltando')) {
+                    moto.classList.add('saltando');
+                    setTimeout(() => {
+                        moto.classList.remove('saltando');
+                    }, 6000);
+                }
+            }
+        }
+
+        document.addEventListener('keydown', saltar);
+
+        function empezarJuego() {
+            jugando = true;
+            puntaje = 0;
+            velocidad = 6;
+            mensajeInicio.classList.add('d-none');
+            mensajeInicio.style.display = 'none';
+            puntajeTexto.innerText = '00000';
+            
+            borrarObstaculos();
+
+            loopJuego = setInterval(verificarColision, 10);
+            loopObstaculos = setTimeout(crearObstaculo, 1500);
+            loopPuntaje = setInterval(subirPuntaje, 100);
+        }
+
+        function subirPuntaje() {
+            puntaje++;
+            let ceros = "";
+            if (puntaje < 10) ceros = "0000";
+            else if (puntaje < 100) ceros = "000";
+            else if (puntaje < 1000) ceros = "00";
+            else if (puntaje < 10000) ceros = "0";
+            puntajeTexto.innerText = ceros + puntaje;
+
+            if (puntaje % 500 === 0) {
+                velocidad += 1;
+            }
+        }
+
+        function crearObstaculo() {
+            if (!jugando) return;
+
+            const obstaculo = document.createElement('div');
+            const esRampa = Math.random() > 0.5;
+            
+            obstaculo.classList.add('obstaculo');
+            if (esRampa) {
+                obstaculo.classList.add('rampa');
+            } else {
+                obstaculo.classList.add('cactus');
+            }
+            
+            obstaculo.style.left = '800px';
+            contenedor.appendChild(obstaculo);
+
+            let loopMoverObstaculo = setInterval(() => {
+                if (!jugando) {
+                    clearInterval(loopMoverObstaculo);
+                    return;
+                }
+                let posicionActual = parseInt(obstaculo.style.left);
+                if (posicionActual < -60) {
+                    clearInterval(loopMoverObstaculo);
+                    contenedor.removeChild(obstaculo);
+                } else {
+                    obstaculo.style.left = (posicionActual - velocidad) + 'px';
+                }
+            }, 10);
+
+            let proximoTiempo = Math.random() * (2500 - 1000) + 1000;
+            loopObstaculos = setTimeout(crearObstaculo, proximoTiempo / (velocidad/6));
+        }
+
+        function verificarColision() {
+            const motoRect = moto.getBoundingClientRect();
+            const obstaculos = document.getElementsByClassName('obstaculo');
+
+            for (let obs of obstaculos) {
+                const obsRect = obs.getBoundingClientRect();
+
+                if (
+                    motoRect.right > obsRect.left &&
+                    motoRect.left < obsRect.right &&
+                    motoRect.bottom > obsRect.top &&
+                    motoRect.top < obsRect.bottom
+                ) {
+                    perder();
+                }
+            }
+        }
+
+        function perder() {
+            jugando = false;
+            clearInterval(loopJuego);
+            clearTimeout(loopObstaculos);
+            clearInterval(loopPuntaje);
+            
+            moto.classList.remove('saltando');
+            
+            mensajeInicio.innerHTML = "GAME OVER<br>Presiona ESPACIO para reiniciar";
+            mensajeInicio.style.display = 'block';
+        }
+
+        function borrarObstaculos() {
+            const obstaculos = document.getElementsByClassName('obstaculo');
+            while(obstaculos.length > 0){
+                obstaculos[0].parentNode.removeChild(obstaculos[0]);
+            }
+        }
+
+    </script>
+</body>
+</html>
