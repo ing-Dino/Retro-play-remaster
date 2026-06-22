@@ -37,3 +37,4 @@ Carpeta models: Archivos con las consultas SQL a las tablas.
 Carpeta views: Están las páginas HTML.
 Carpeta public: Recursos que son públicos para la página web.
 Archivo server.js: El archivo principal que levanta el puerto y contiene las rutas.# Retro-play-remaster
+# Retro-play-remaster
