@@ -2,83 +2,155 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Moto Runner xddd</title>
+    <title>RetroPlay Freestyle - Moto Runner Ultimate xddd</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #f7f7f7;
+            background-color: #87CEEB; 
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
             font-family: 'Courier New', Courier, monospace;
+            color: #535353;
         }
+
+        #btn-volver {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #1a1c23;
+            color: #ffc107;
+            text-decoration: none;
+            font-family: system-ui, sans-serif;
+            font-weight: bold;
+            border-radius: 6px;
+            border: 2px solid #242936;
+            transition: 0.2s;
+            z-index: 100;
+        }
+
+        #btn-volver:hover {
+            background-color: #ffc107;
+            color: #1a1c23;
+            transform: translateY(-2px);
+        }
+
         #contenedor {
             position: relative;
-            width: 800px;
-            height: 250px;
-            background-color: white;
-            border-bottom: 2px solid #535353;
+            width: 1000px;
+            height: 400px;
+            background-color: #ffffff;
+            border: 2px solid #535353;
+            border-radius: 8px;
             overflow: hidden;
+            border-bottom: 3px solid #535353;
         }
+
+        /* --- FONDOS PARALLAX ARREGLADOS --- */
+        #cielo {
+            position: absolute;
+            width: 2000px;
+            height: 100%;
+            background-image: radial-gradient(circle at 50% 50%, #e0f7fa 2%, transparent 5%);
+            background-size: 100px 100px;
+            opacity: 0.8;
+            z-index: 1;
+        }
+
+        #ciudad {
+            position: absolute;
+            bottom: 0;
+            width: 2000px;
+            height: 120px;
+            /* Ahora sí parece una ciudad gris de fondo */
+            background: repeating-linear-gradient(
+                to right,
+                #cccccc 0px, #cccccc 60px,
+                #b3b3b3 60px, #b3b3b3 100px,
+                #999999 100px, #999999 180px
+            );
+            z-index: 2;
+            opacity: 0.5;
+        }
+
+        /* --- MOTO Y ANIMACIONES --- */
         #moto {
             position: absolute;
             bottom: 0;
             left: 50px;
             width: 50px;
             height: 50px;
-            background-color: #ff4444; /* Rojo: Motoquero */
-            border-radius: 5px;
+            background-image: url('image_16.png'); 
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent; 
+            transform-origin: center center;
+            z-index: 10;
         }
-        .obstaculo {
+
+        .haciendo-flip { animation: giro360 0.8s linear; }
+        @keyframes giro360 { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+
+        /* --- OBSTÁCULOS Y OBJETOS --- */
+        .obstaculo { position: absolute; bottom: 0; z-index: 8; }
+        
+        /* CACTUS ARREGLADO (Usa Emoji) */
+        .cactus { 
+            width: 30px; 
+            height: 50px; 
+            background-color: transparent !important; 
+            border: none !important; 
+            font-size: 45px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .rampa { width: 60px; height: 60px; background-color: #888888; clip-path: polygon(0 100%, 100% 100%, 100% 0); }
+        
+        .moneda {
             position: absolute;
-            bottom: 0;
+            width: 20px;
+            height: 20px;
+            background-color: #ffd700;
+            border-radius: 50%;
+            border: 2px solid #b8860b;
+            z-index: 8;
+            animation: latir 1s infinite alternate;
         }
-        .cactus {
-            width: 30px;
-            height: 50px;
-            background-color: #228b22; /* Verde: Cactus */
-        }
-        .rampa {
-            width: 60px;
-            height: 30px;
-            background-color: #888888; /* Gris: Rampa */
-            clip-path: polygon(0 100%, 100% 100%, 100% 0);
-        }
-        #puntaje {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 20px;
-            color: #535353;
-            font-weight: bold;
-        }
-        #mensaje-inicio {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 24px;
-            color: #535353;
-        }
-        .saltando {
-            animation: saltar 0.6s linear;
-        }
-        @keyframes saltar {
-            0% { bottom: 0; }
-            30% { bottom: 100px; }
-            70% { bottom: 100px; }
-            100% { bottom: 0; }
-        }
+        @keyframes latir { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+
+        .particula { position: absolute; width: 4px; height: 4px; background-color: #888888; border-radius: 50%; z-index: 9; opacity: 1; transition: transform 0.5s linear, opacity 0.5s ease-out; }
+
+        /* --- UI --- */
+        #marcador { position: absolute; top: 15px; right: 20px; font-size: 24px; font-weight: bold; display: flex; gap: 20px; z-index: 20; }
+        #high-score { color: #888888; }
+        #mensaje-inicio { position: absolute; width: 100%; text-align: center; top: 50%; transform: translateY(-50%); font-size: 28px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); z-index: 50; }
+        .puntos-flotantes { position: absolute; font-size: 20px; font-weight: bold; color: #ffc107; text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 2px 0px 0 #000, -2px 0px 0 #000, 0px 2px 0 #000, 0px -2px 0 #000; z-index: 80; animation: flotarYDesvanecer 1s ease-out forwards; }
+        @keyframes flotarYDesvanecer { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-40px); } }
+        .puntos-extra { color: #ffc107 !important; transform: scale(1.3); transition: all 0.2s; }
     </style>
 </head>
 <body>
 
+    <audio id="musica-fondo" src="BFG Division 2020 - DOOM Eternal OST (192k).mp3" loop></audio>
+
+    <a href="/" id="btn-volver">🔙 Volver al Catálogo</a>
+
     <div id="contenedor">
-        <div id="puntaje">00000</div>
+        <div id="cielo"></div>
+        <div id="ciudad"></div>
+
+        <div id="marcador">
+            <span id="high-score">HI 00000</span>
+            <span id="puntaje">00000</span>
+        </div>
         <div id="moto"></div>
         <div id="mensaje-inicio">Presiona ESPACIO para empezar</div>
     </div>
@@ -87,26 +159,79 @@
         const contenedor = document.getElementById('contenedor');
         const moto = document.getElementById('moto');
         const puntajeTexto = document.getElementById('puntaje');
+        const highScoreTexto = document.getElementById('high-score');
         const mensajeInicio = document.getElementById('mensaje-inicio');
+        const fondoCielo = document.getElementById('cielo');
+        const fondoCiudad = document.getElementById('ciudad');
+        const musicaFondo = document.getElementById('musica-fondo');
         
         let jugando = false;
         let puntaje = 0;
-        let loopJuego;
-        let loopObstaculos;
-        let loopPuntaje;
+        let mejorPuntaje = localStorage.getItem('motoHighScore') || 0; 
+        
+        let loopJuego, loopObstaculos, loopPuntaje, loopParallax, loopParticulas;
         let velocidad = 6;
+        let bgPosCielo = 0;
+        let bgPosCiudad = 0;
+
+        let posY = 0;
+        let velY = 0;
+        let gravedadBase = 0.6;
+        let enRampa = false;
+        let estaHaciendoFlip = false;
+
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playSound(tipo) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (tipo === 'salto') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (tipo === 'moneda') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } else if (tipo === 'choque') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        actualizarTextoPuntaje(mejorPuntaje, highScoreTexto, "HI ");
 
         function saltar(e) {
             if (e.code === 'Space') {
+                e.preventDefault(); 
+                initAudio(); 
                 if (!jugando) {
+                    musicaFondo.volume = 0.3; // Volumen piola para que no tape los efectos
+                    musicaFondo.play(); // Arrnaca la música
                     empezarJuego();
                     return;
                 }
-                if (!moto.classList.contains('saltando')) {
-                    moto.classList.add('saltando');
-                    setTimeout(() => {
-                        moto.classList.remove('saltando');
-                    }, 6000);
+                if ((posY <= 0 || enRampa) && !estaHaciendoFlip) {
+                    velY = 11;
+                    enRampa = false;
+                    playSound('salto');
                 }
             }
         }
@@ -117,102 +242,239 @@
             jugando = true;
             puntaje = 0;
             velocidad = 6;
+            posY = 0;
+            velY = 0;
+            estaHaciendoFlip = false;
+            moto.style.bottom = '0px';
+            moto.style.transform = 'none';
+            moto.classList.remove('haciendo-flip');
+            borrarBasuraVisual();
+            
             mensajeInicio.classList.add('d-none');
             mensajeInicio.style.display = 'none';
-            puntajeTexto.innerText = '00000';
+            actualizarTextoPuntaje(0, puntajeTexto, "");
             
-            borrarObstaculos();
-
-            loopJuego = setInterval(verificarColision, 10);
+            loopJuego = setInterval(verificarLogicaPrincipal, 15); 
             loopObstaculos = setTimeout(crearObstaculo, 1500);
             loopPuntaje = setInterval(subirPuntaje, 100);
+            loopParallax = setInterval(moverFondos, 15);
+            loopParticulas = setInterval(generarParticulas, 50);
         }
 
-        function subirPuntaje() {
-            puntaje++;
-            let ceros = "";
-            if (puntaje < 10) ceros = "0000";
-            else if (puntaje < 100) ceros = "000";
-            else if (puntaje < 1000) ceros = "00";
-            else if (puntaje < 10000) ceros = "0";
-            puntajeTexto.innerText = ceros + puntaje;
+        function generarParticulas() {
+            if (!jugando) return;
+            if (posY <= 0 || enRampa) {
+                const polvo = document.createElement('div');
+                polvo.classList.add('particula');
+                polvo.style.left = '45px'; 
+                polvo.style.bottom = (posY + 2) + 'px';
+                contenedor.appendChild(polvo);
 
-            if (puntaje % 500 === 0) {
-                velocidad += 1;
+                setTimeout(() => {
+                    polvo.style.transform = `translate(-20px, ${Math.random() * 10}px)`;
+                    polvo.style.opacity = '0';
+                }, 10);
+
+                setTimeout(() => polvo.remove(), 500);
+            }
+        }
+
+        function moverFondos() {
+            if (!jugando) return;
+            bgPosCielo -= (velocidad * 0.1); 
+            bgPosCiudad -= (velocidad * 0.3); 
+            fondoCielo.style.left = bgPosCielo + 'px';
+            fondoCiudad.style.left = bgPosCiudad + 'px';
+            
+            if (bgPosCielo <= -1000) bgPosCielo = 0;
+            if (bgPosCiudad <= -1000) bgPosCiudad = 0;
+        }
+
+        function actualizarTextoPuntaje(valor, elemento, prefijo) {
+            let ceros = "";
+            if (valor < 10) ceros = "0000";
+            else if (valor < 100) ceros = "000";
+            else if (valor < 1000) ceros = "00";
+            else if (valor < 10000) ceros = "0";
+            elemento.innerText = prefijo + ceros + Math.floor(valor);
+        }
+
+        function subirPuntaje(cantidad = 1) {
+            puntaje += cantidad;
+            actualizarTextoPuntaje(puntaje, puntajeTexto, "");
+            if (puntaje > mejorPuntaje) {
+                mejorPuntaje = puntaje;
+                actualizarTextoPuntaje(mejorPuntaje, highScoreTexto, "HI ");
+            }
+            if (puntaje % 100 === 0 && velocidad < 18) {
+                velocidad += 0.5; 
             }
         }
 
         function crearObstaculo() {
             if (!jugando) return;
 
-            const obstaculo = document.createElement('div');
-            const esRampa = Math.random() > 0.5;
+            const entidad = document.createElement('div');
+            const randomType = Math.random();
             
-            obstaculo.classList.add('obstaculo');
-            if (esRampa) {
-                obstaculo.classList.add('rampa');
+            if (randomType < 0.1) {
+                entidad.classList.add('moneda');
+                entidad.style.bottom = (Math.random() * 100 + 60) + 'px'; 
             } else {
-                obstaculo.classList.add('cactus');
+                entidad.classList.add('obstaculo');
+                if (randomType < 0.3) {
+                    entidad.classList.add('rampa');
+                } else {
+                    entidad.classList.add('cactus');
+                    entidad.innerText = '🌵'; // INYECCIÓN DE CACTUS GIGANTE
+                }
             }
             
-            obstaculo.style.left = '800px';
-            contenedor.appendChild(obstaculo);
+            entidad.style.left = '1000px'; 
+            contenedor.appendChild(entidad);
 
-            let loopMoverObstaculo = setInterval(() => {
-                if (!jugando) {
-                    clearInterval(loopMoverObstaculo);
-                    return;
-                }
-                let posicionActual = parseInt(obstaculo.style.left);
-                if (posicionActual < -60) {
-                    clearInterval(loopMoverObstaculo);
-                    contenedor.removeChild(obstaculo);
+            let loopMover = setInterval(() => {
+                if (!jugando) { clearInterval(loopMover); return; }
+                let posActual = parseFloat(entidad.style.left);
+                if (posActual < -60) {
+                    clearInterval(loopMover);
+                    entidad.remove();
                 } else {
-                    obstaculo.style.left = (posicionActual - velocidad) + 'px';
+                    entidad.style.left = (posActual - velocidad) + 'px';
                 }
-            }, 10);
+            }, 15);
 
-            let proximoTiempo = Math.random() * (2500 - 1000) + 1000;
-            loopObstaculos = setTimeout(crearObstaculo, proximoTiempo / (velocidad/6));
+            let proximoTiempo = Math.random() * (2200 - 800) + 800;
+            loopObstaculos = setTimeout(crearObstaculo, proximoTiempo / (velocidad/5));
         }
 
-        function verificarColision() {
+        function verificarLogicaPrincipal() {
             const motoRect = moto.getBoundingClientRect();
-            const obstaculos = document.getElementsByClassName('obstaculo');
+            const entidades = contenedor.children; 
+            
+            let alturaPiso = 0;
+            let cactusPeligrosoCerca = false;
+            enRampa = false;
 
-            for (let obs of obstaculos) {
+            for (let i=0; i<entidades.length; i++) {
+                const obs = entidades[i];
+                if(obs.id === 'moto' || obs.id === 'marcador' || obs.id === 'mensaje-inicio' || obs.id === 'cielo' || obs.id === 'ciudad' || obs.classList.contains('particula')) continue;
+
                 const obsRect = obs.getBoundingClientRect();
+                const margenColision = 12; 
 
-                if (
-                    motoRect.right > obsRect.left &&
-                    motoRect.left < obsRect.right &&
-                    motoRect.bottom > obsRect.top &&
-                    motoRect.top < obsRect.bottom
-                ) {
-                    perder();
+                if (obs.classList.contains('moneda')) {
+                    if (motoRect.right > obsRect.left && motoRect.left < obsRect.right &&
+                        motoRect.bottom > obsRect.top && motoRect.top < obsRect.bottom) {
+                        playSound('moneda');
+                        sumarPuntosFlotantes(300); 
+                        obs.remove();
+                    }
+                    continue; 
+                }
+
+                if (obs.classList.contains('cactus') && posY > 20) {
+                    const distanciaHaciaCactus = obsRect.left - motoRect.right;
+                    if (distanciaHaciaCactus > -20 && distanciaHaciaCactus < 120) {
+                        cactusPeligrosoCerca = true;
+                    }
+                }
+
+                if (motoRect.right - margenColision > obsRect.left && motoRect.left + margenColision < obsRect.right) {
+                    
+                    if (obs.classList.contains('rampa')) {
+                        let distanciaAdentro = (motoRect.right - margenColision) - obsRect.left;
+                        let alturaRampa = distanciaAdentro; 
+                        
+                        if (alturaRampa > 60) alturaRampa = 60;
+                        if (alturaRampa < 0) alturaRampa = 0;
+                        if (alturaRampa > alturaPiso) alturaPiso = alturaRampa;
+                        
+                        enRampa = true;
+
+                        if (distanciaAdentro >= 50 && posY <= 65 && !estaHaciendoFlip) {
+                            velY = 12; 
+                            enRampa = false; 
+                            alturaPiso = 0; 
+                            
+                            estaHaciendoFlip = true;
+                            moto.classList.add('haciendo-flip');
+                            playSound('salto');
+                            sumarPuntosFlotantes(150); 
+                            
+                            setTimeout(() => {
+                                estaHaciendoFlip = false;
+                                moto.classList.remove('haciendo-flip');
+                                if(jugando) moto.style.transform = 'none'; 
+                            }, 800); 
+                        }
+                    } else if (obs.classList.contains('cactus')) {
+                        if (posY < 50 && motoRect.left + margenColision < obsRect.right - margenColision) {
+                             perder();
+                        }
+                    }
                 }
             }
+
+            let gravedadActual = gravedadBase;
+            if (cactusPeligrosoCerca && velY < 0) gravedadActual = 0.25; 
+
+            if (!enRampa || velY > 0) velY -= gravedadActual;
+            posY += velY;
+
+            if (posY < alturaPiso) { posY = alturaPiso; velY = 0; }
+            if (posY < 0) { posY = 0; velY = 0; }
+
+            moto.style.bottom = posY + 'px';
+        }
+
+        function sumarPuntosFlotantes(cantidad) {
+            subirPuntaje(cantidad);
+            const textoFlotante = document.createElement('div');
+            textoFlotante.classList.add('puntos-flotantes');
+            textoFlotante.innerText = "+" + cantidad;
+            
+            const motoRect = moto.getBoundingClientRect();
+            const contenedorRect = contenedor.getBoundingClientRect();
+            const x = (motoRect.left + motoRect.width/2) - contenedorRect.left;
+            const y = (motoRect.top - contenedorRect.top) - 10; 
+
+            textoFlotante.style.left = x + 'px';
+            textoFlotante.style.top = y + 'px';
+            contenedor.appendChild(textoFlotante);
+
+            puntajeTexto.classList.add('puntos-extra');
+            setTimeout(() => {
+                if (textoFlotante.parentNode) textoFlotante.parentNode.removeChild(textoFlotante);
+                puntajeTexto.classList.remove('puntos-extra');
+            }, 1000); 
         }
 
         function perder() {
+            playSound('choque');
+            musicaFondo.pause(); // Para la música
+            musicaFondo.currentTime = 0;
             jugando = false;
             clearInterval(loopJuego);
             clearTimeout(loopObstaculos);
             clearInterval(loopPuntaje);
+            clearInterval(loopParallax);
+            clearInterval(loopParticulas);
             
-            moto.classList.remove('saltando');
+            localStorage.setItem('motoHighScore', mejorPuntaje);
+            
+            estaHaciendoFlip = false;
+            moto.classList.remove('haciendo-flip');
+            moto.style.transform = 'none';
             
             mensajeInicio.innerHTML = "GAME OVER<br>Presiona ESPACIO para reiniciar";
             mensajeInicio.style.display = 'block';
         }
 
-        function borrarObstaculos() {
-            const obstaculos = document.getElementsByClassName('obstaculo');
-            while(obstaculos.length > 0){
-                obstaculos[0].parentNode.removeChild(obstaculos[0]);
-            }
+        function borrarBasuraVisual() {
+            const basuras = document.querySelectorAll('.obstaculo, .moneda, .puntos-flotantes, .particula');
+            basuras.forEach(b => b.remove());
         }
-
     </script>
 </body>
 </html>

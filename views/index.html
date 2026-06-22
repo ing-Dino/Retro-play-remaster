@@ -7,89 +7,8 @@
     <title>RetroPlay — Catálogo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <style>
-        body {
-            background-color: #0d0e12;
-            color: #e2e8f0;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-
-        .navbar {
-            background-color: #15171e !important;
-            border-bottom: 1px solid #242936;
-        }
-
-        .hero-section {
-            background: linear-gradient(135deg, #15171e, #1e2230);
-            border: 1px solid #242936;
-        }
-
-        .card {
-            background-color: #15171e !important;
-            border: 1px solid #242936 !important;
-            transition: transform 0.2s, box-shadow 0.2s;
-            overflow: hidden;
-        }
-
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45) !important;
-            border-color: #ffc107 !important;
-        }
-
-        .card-img-top {
-            height: 210px;
-            object-fit: cover;
-            border-bottom: 1px solid #242936;
-        }
-
-        .price-box {
-            background-color: #1e2230 !important;
-            border: 1px solid #2d3349;
-        }
-
-        .offcanvas {
-            background-color: #15171e !important;
-            border-right: 1px solid #242936 !important;
-            color: #ffffff !important;
-        }
-
-        .list-group-item {
-            background-color: transparent !important;
-            color: #94a3b8 !important;
-            border-color: #242936 !important;
-        }
-
-        .list-group-item:hover {
-            color: #ffffff !important;
-            background-color: #1e2230 !important;
-        }
-
-        .list-group-item.active {
-            background-color: #ffc107 !important;
-            border-color: #ffc107 !important;
-            color: #000000 !important;
-            font-weight: bold;
-        }
-
-        .search-box {
-            background-color: #15171e;
-            border: 1px solid #242936;
-            color: #ffffff;
-        }
-
-        .search-box:focus {
-            background-color: #15171e;
-            color: #ffffff;
-            border-color: #ffc107;
-            box-shadow: none;
-        }
-
-        footer {
-            border-top: 1px solid #242936;
-            background-color: #15171e;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
@@ -130,7 +49,7 @@
                     💿 Solo Videojuegos
                 </button>
                 
-                <a href="/juego.html" target="_blank" class="list-group-item list-group-item-action py-3 mt-3 border-top border-secondary text-success fw-bold" style="background-color: #1a1c23 !important;">
+                <a href="/moto-run.html" target="_blank" class="list-group-item list-group-item-action py-3 mt-3 border-top border-secondary text-success fw-bold" style="background-color: #1a1c23 !important;">
                     🏍️ Jugar Moto Runner
                 </a>
             </div>
@@ -184,7 +103,7 @@
         let todosLosProductos = [];
         let filtroActual = 'Todos';
 
-        const imagenDefault = 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600';
+        const imagenDefault = '/img/default.png'; // Ruta local
 
         document.addEventListener('DOMContentLoaded', cargarCatalogo);
 
@@ -239,18 +158,19 @@
             productos.forEach(juego => {
                 const stockValido = Number(juego.stock) > 0;
 
-                let imagenUrl = juego.imagen_url || juego.genero || '';
+                // Obtenemos la ruta limpia desde la base de datos sin validar http
+                let imagenUrl = juego.genero || '';
                 imagenUrl = imagenUrl.trim();
-
-                if (!imagenUrl.startsWith('http://') && !imagenUrl.startsWith('https://')) {
-                    imagenUrl = imagenDefault;
-                }
 
                 container.innerHTML += `
                     <div class="col">
                         <div class="card h-100 shadow-sm">
-                            <img src="${imagenUrl}" class="card-img-top" alt="${juego.titulo}"
-                                onerror="this.src='${imagenDefault}'">
+                            
+                            <div style="height: 210px; overflow: hidden; border-bottom: 1px solid #242936; background-color: #1e2230;">
+                                <img src="${imagenUrl}" class="card-img-top" alt="${juego.titulo}"
+                                    onerror="this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=600'; this.onerror=null;"
+                                    style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
 
                             <div class="card-body d-flex flex-column justify-content-between">
                                 <div>
@@ -286,12 +206,12 @@
                                     </div>
 
                                     <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                                        <button onclick="mostrarMensaje('arrendar')" 
+                                        <button onclick='generarVoucher(${JSON.stringify(juego)}, "Arriendo")' 
                                             class="btn btn-sm btn-outline-light flex-grow-1 ${stockValido ? '' : 'disabled'}">
                                             Arrendar
                                         </button>
 
-                                        <button onclick="mostrarMensaje('comprar')" 
+                                        <button onclick='generarVoucher(${JSON.stringify(juego)}, "Compra")' 
                                             class="btn btn-sm btn-warning flex-grow-1 ${stockValido ? '' : 'disabled'}">
                                             Comprar
                                         </button>
@@ -343,12 +263,59 @@
             renderizarCatalogo(productosFiltrados);
         }
 
-        function mostrarMensaje(accion) {
-            if (accion === 'arrendar') {
-                alert('Para arrendar este artículo, dirígete a nuestra tienda física.');
-            } else {
-                alert('Para comprar este artículo, dirígete a nuestra tienda física.');
-            }
+        function generarVoucher(juego, tipoTransaccion) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ format: [80, 150] }); // Tamaño Boleta Térmica
+
+            const precio = tipoTransaccion === 'Arriendo' ? juego.precio_arriendo_usado : juego.precio_venta_excelente;
+            const idTransaccion = Math.floor(Math.random() * 900000) + 100000;
+
+            doc.setFont("courier", "bold");
+            doc.setFontSize(12);
+            doc.text("RETROPLAY FREESTYLE", 40, 15, { align: "center" });
+            
+            doc.setFontSize(8);
+            doc.setFont("courier", "normal");
+            doc.text("Graneros, O'Higgins", 40, 20, { align: "center" }); 
+            doc.text("--------------------------------", 40, 25, { align: "center" });
+
+            doc.setFont("courier", "bold");
+            doc.text(`COMPROBANTE DE ${tipoTransaccion.toUpperCase()}`, 5, 35);
+            
+            doc.setFont("courier", "normal");
+            doc.text(`TRX ID: #${idTransaccion}`, 5, 45);
+            doc.text(`FECHA:  ${new Date().toLocaleString('es-CL')}`, 5, 50);
+            doc.text(`METODO: Web App`, 5, 55);
+            
+            doc.text("--------------------------------", 40, 65, { align: "center" });
+            
+            doc.setFont("courier", "bold");
+            doc.text("DETALLE DEL ARTICULO:", 5, 75);
+            doc.setFont("courier", "normal");
+            
+            // Divide el texto por si el título de tu juego es muy largo
+            const splitTitle = doc.splitTextToSize(juego.titulo, 70);
+            doc.text(splitTitle, 5, 82);
+            
+            let currentY = 82 + (splitTitle.length * 4) + 5;
+            
+            doc.text(`Plataforma: ${juego.consola}`, 5, currentY);
+            doc.text(`Cantidad:   1x`, 5, currentY + 5);
+            
+            doc.text("--------------------------------", 40, currentY + 15, { align: "center" });
+            
+            doc.setFont("courier", "bold");
+            doc.setFontSize(10);
+            doc.text(`TOTAL: $${Number(precio).toLocaleString('es-CL')} CLP`, 5, currentY + 25);
+
+            doc.setFontSize(7);
+            doc.setFont("courier", "italic");
+            doc.text("Guarde este comprobante para", 40, 135, { align: "center" });
+            doc.text("el retiro en sucursal.", 40, 139, { align: "center" });
+
+            doc.save(`Voucher_${tipoTransaccion}_${idTransaccion}.pdf`);
+            
+            alert(`¡${tipoTransaccion} procesado(a) con éxito! Se descargará tu comprobante.`);
         }
     </script>
 

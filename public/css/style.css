@@ -1,8 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
 
+/* =========================================
+   1. ESTILOS GLOBALES (BASE DEL TEMA OSCURO)
+   ========================================= */
 body {
-    background-color: #f4f6f9;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0d0e12;
+    color: #e2e8f0;
+    font-family: system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Background especial solo para el Login */
+body.login-body {
+    background: radial-gradient(circle at top, #1e2230, #0d0e12 60%);
+    min-height: 100vh;
 }
 
 .navbar-brand, h1, h2, h3, h4 {
@@ -11,33 +23,122 @@ body {
     letter-spacing: 1px;
 }
 
+.navbar {
+    background-color: #15171e !important;
+    border-bottom: 1px solid #242936;
+}
+
+/* =========================================
+   2. COMPONENTES GLOBALES Y BOTONES
+   ========================================= */
+.form-control, .form-select, .search-box {
+    background-color: #1e2230;
+    border: 1px solid #2d3349;
+    color: #ffffff;
+}
+
+.form-control:focus, .form-select:focus, .search-box:focus {
+    background-color: #1e2230;
+    color: #ffffff;
+    border-color: #ffc107;
+    box-shadow: none;
+}
+
+.form-select:disabled {
+    background-color: #15171e;
+    opacity: 0.6;
+}
+
+.badge { font-size: 0.85rem; padding: 0.4em 0.6em; }
+.bg-dark { background-color: #1a1a1a !important; }
+.btn-success { background-color: #28a745; border-color: #28a745; }
+.btn-warning { background-color: #ffc107; border-color: #ffc107; color: #000; }
+
+/* =========================================
+   3. TARJETAS DE PRODUCTOS (CARDS)
+   ========================================= */
 .card {
-    border: 2px solid #343a40;
+    background-color: #15171e !important;
+    border: 1px solid #242936 !important;
     border-radius: 8px;
     transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45) !important;
+    border-color: #ffc107 !important;
 }
 
-.badge {
-    font-size: 0.85rem;
-    padding: 0.4em 0.6em;
+.card-img-top {
+    height: 210px;
+    object-fit: cover;
+    border-bottom: 1px solid #242936;
 }
 
-.bg-dark {
-    background-color: #1a1a1a !important;
+/* =========================================
+   4. ESTILOS DE LA TIENDA (INDEX)
+   ========================================= */
+.hero-section {
+    background: linear-gradient(135deg, #15171e, #1e2230);
+    border: 1px solid #242936;
 }
 
-.btn-success {
-    background-color: #28a745;
-    border-color: #28a745;
+.price-box {
+    background-color: #1e2230 !important;
+    border: 1px solid #2d3349;
 }
 
-.btn-warning {
-    background-color: #ffc107;
-    border-color: #ffc107;
-    color: #000;
+.offcanvas {
+    background-color: #15171e !important;
+    border-right: 1px solid #242936 !important;
+    color: #ffffff !important;
 }
+
+.list-group-item {
+    background-color: transparent !important;
+    color: #94a3b8 !important;
+    border-color: #242936 !important;
+}
+
+.list-group-item:hover {
+    color: #ffffff !important;
+    background-color: #1e2230 !important;
+}
+
+.list-group-item.active {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #000000 !important;
+    font-weight: bold;
+}
+
+footer {
+    border-top: 1px solid #242936;
+    background-color: #15171e;
+}
+
+/* =========================================
+   5. PANEL DE ADMIN Y LOGIN
+   ========================================= */
+.panel-card, .sidebar-form, .inventory-card {
+    background-color: #15171e;
+    border: 1px solid #242936;
+    border-radius: 10px;
+}
+
+.stat-number { font-size: 1.8rem; font-weight: bold; }
+
+.login-card {
+    width: 370px;
+    background-color: #15171e;
+    border: 1px solid #242936;
+    border-radius: 14px;
+}
+
+.brand-icon { font-size: 3rem; }
+
+/* Corrección de la tabla */
+.table { transform: translateZ(0); backface-visibility: hidden; }
+.table td:last-child, .table th:last-child { white-space: nowrap; width: 1%; }

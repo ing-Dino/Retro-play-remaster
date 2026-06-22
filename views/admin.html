@@ -7,59 +7,10 @@
     <title>Panel Admin - RetroPlay</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <style>
-        body {
-            background-color: #0d0e12;
-            color: #e2e8f0;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-
-        .navbar {
-            background-color: #15171e !important;
-            border-bottom: 1px solid #242936;
-        }
-
-        .panel-card,
-        .sidebar-form,
-        .inventory-card {
-            background-color: #15171e;
-            border: 1px solid #242936;
-            border-radius: 10px;
-        }
-
-        .form-control,
-        .form-select {
-            background-color: #1e2230;
-            border: 1px solid #2d3349;
-            color: #fff;
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            background-color: #1e2230;
-            color: #fff;
-            border-color: #ffc107;
-            box-shadow: none;
-        }
-        
-        .form-select:disabled {
-            background-color: #15171e;
-            opacity: 0.6;
-        }
-
-        .table img {
-            width: 50px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid #343a40;
-        }
-
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 </head>
 
 <body data-bs-theme="dark">
@@ -144,9 +95,12 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label small text-white-50">Enlace de Imagen</label>
-                            <input type="url" id="imagen_url" class="form-control"
-                                placeholder="https://link-de-la-imagen.jpg" required>
+                            <label class="form-label small text-white-50">Subir Imagen del Artículo</label>
+                            <input type="file" id="imagen_file" class="form-control" accept="image/*">
+                            <input type="hidden" id="imagen_actual">
+                            <div id="preview-container" class="mt-2 small text-white-50 d-none">
+                                Archivo actual: <span id="nombre-imagen-actual" class="text-warning"></span>
+                            </div>
                         </div>
 
                         <div class="mb-3">
@@ -180,6 +134,11 @@
                 <div class="inventory-card shadow-sm p-4">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                         <h5 class="fw-bold text-white m-0">📊 Inventario de RetroPlay</h5>
+                        
+                        <div>
+                            <button class="btn btn-sm btn-success me-2" onclick="exportarExcel()">📊 Excel</button>
+                            <button class="btn btn-sm btn-danger" onclick="exportarPDF()">📕 PDF</button>
+                        </div>
 
                         <input type="text" id="buscador" class="form-control w-100 w-md-50"
                             placeholder="Buscar producto..." oninput="filtrarTabla()">
@@ -219,7 +178,7 @@
         const tablaInventario = document.getElementById('tabla-inventario');
         const selectTipo = document.getElementById('tipo');
         const selectConsola = document.getElementById('consola');
-        const imagenDefault = 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=100';
+        const imagenDefault = '/img/default.png';
 
         let inventario = [];
 
@@ -275,22 +234,19 @@
             }
 
             juegos.forEach(juego => {
-                let imgUrl = juego.imagen_url || juego.genero || '';
-                imgUrl = imgUrl.trim();
-
-                if (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://')) {
-                    imgUrl = imagenDefault;
-                }
+                // Ahora solo tomamos la ruta que viene de la BD (en la columna genero)
+                let imgUrl = juego.genero || '';
+                imgUrl = imgUrl.trim() !== '' ? imgUrl : imagenDefault;
 
                 const stockClass = Number(juego.stock) > 0 ? 'text-success' : 'text-danger';
-                
-                // Pequeño ajuste visual para que se vea mejor si es "Propia"
                 const textoConsola = juego.consola === 'Propia' ? 'Hardware Físico' : juego.consola;
 
                 tablaInventario.innerHTML += `
                     <tr>
-                        <td>
-                            <img src="${imgUrl}" onerror="this.src='${imagenDefault}'" alt="${juego.titulo}">
+                        <td style="width: 70px; text-align: center;">
+                            <div style="width: 50px; height: 60px; overflow: hidden; display: inline-block; border-radius: 6px; border: 1px solid #343a40;">
+                                <img src="${imgUrl}" onerror="this.src='${imagenDefault}'; this.onerror=null;" alt="${juego.titulo}" style="width: 100%; height: 100%; object-fit: cover; border: none;">
+                            </div>
                         </td>
 
                         <td class="fw-bold text-light">${juego.titulo}</td>
@@ -356,42 +312,66 @@
             e.preventDefault();
 
             const id = document.getElementById('game-id').value;
+            const fileInput = document.getElementById('imagen_file');
 
+            if (!id && fileInput.files.length === 0) {
+                mostrarMensaje('Debe seleccionar una imagen para registrar el producto.', 'danger');
+                return;
+            }
+
+            // Armamos el objeto con los datos de texto (como lo tenías originalmente)
             const data = {
                 titulo: document.getElementById('titulo').value.trim(),
                 tipo: document.getElementById('tipo').value,
-                // Extraemos el valor, incluso si el select está disabled
                 consola: document.getElementById('consola').value,
-                genero: document.getElementById('imagen_url').value.trim(),
-                imagen_url: document.getElementById('imagen_url').value.trim(),
                 stock: Number(document.getElementById('stock').value),
                 precio_arriendo_usado: Number(document.getElementById('precio_arriendo').value),
-                precio_venta_excelente: Number(document.getElementById('precio_venta').value)
+                precio_venta_excelente: Number(document.getElementById('precio_venta').value),
+                imagen_actual: document.getElementById('imagen_actual').value // Para retener la vieja al editar
             };
 
-            if (!validarFormulario(data)) return;
+            // FUNCIÓN INTERNA PARA ENVIAR AL SERVIDOR (Mantiene limpio el código)
+            const enviarAlServidor = async (payloadJSON) => {
+                const url = id ? `/api/juegos/${id}` : '/api/juegos';
+                const method = id ? 'PUT' : 'POST';
 
-            const url = id ? `/api/juegos/${id}` : '/api/juegos';
-            const method = id ? 'PUT' : 'POST';
+                try {
+                    const res = await fetch(url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payloadJSON) // Lo enviamos como JSON normalito
+                    });
 
-            try {
-                const res = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
+                    if (!res.ok) throw new Error('Error al guardar.');
 
-                if (!res.ok) {
-                    throw new Error('Error al guardar.');
+                    mostrarMensaje(id ? 'Producto actualizado.' : 'Producto agregado.', 'success');
+                    resetForm();
+                    cargarInventario();
+
+                } catch (error) {
+                    mostrarMensaje('No se pudo guardar el producto. Revisa el servidor.', 'danger');
                 }
+            };
 
-                mostrarMensaje(id ? 'Producto actualizado correctamente.' : 'Producto agregado correctamente.', 'success');
+            // LÓGICA DE LECTURA DE IMAGEN (El "truco" sin Multer)
+            if (fileInput.files.length > 0) {
+                // Si el usuario eligió un archivo, lo leemos y lo transformamos a Base64
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(evento) {
+                    data.imagen_base64 = evento.target.result; // Aquí va el texto gigante de la imagen
+                    enviarAlServidor(data); // Enviamos una vez termine de leer
+                };
+                
+                reader.onerror = function() {
+                    mostrarMensaje('Error leyendo el archivo en tu navegador.', 'danger');
+                };
 
-                resetForm();
-                cargarInventario();
-
-            } catch (error) {
-                mostrarMensaje('No se pudo guardar el producto. Revisa el servidor.', 'danger');
+                reader.readAsDataURL(file); // Dispara la lectura
+            } else {
+                // Si no hay archivo nuevo (ej: solo editó el precio), enviamos sin base64
+                enviarAlServidor(data);
             }
         });
 
@@ -401,10 +381,7 @@
                 return false;
             }
 
-            if (!data.imagen_url.startsWith('http://') && !data.imagen_url.startsWith('https://')) {
-                mostrarMensaje('El enlace de imagen debe comenzar con http:// o https://', 'danger');
-                return false;
-            }
+            // AQUÍ BORRAMOS EL IF QUE OBLIGABA A USAR HTTP:// O HTTPS://
 
             if (data.stock < 0 || data.precio_arriendo_usado < 0 || data.precio_venta_excelente < 0) {
                 mostrarMensaje('Stock y precios no pueden ser negativos.', 'danger');
@@ -419,11 +396,19 @@
             document.getElementById('titulo').value = juego.titulo;
             document.getElementById('tipo').value = juego.tipo;
             
-            // Disparamos el evento para que bloquee el select si es necesario
             document.getElementById('tipo').dispatchEvent(new Event('change'));
             
             document.getElementById('consola').value = juego.consola;
-            document.getElementById('imagen_url').value = juego.imagen_url || juego.genero || '';
+            
+            // Almacenamos la ruta actual del archivo (/img/nombre.png) en el input oculto
+            const rutaImagen = juego.genero || '';
+            document.getElementById('imagen_actual').value = rutaImagen;
+            
+            if (rutaImagen) {
+                document.getElementById('preview-container').classList.remove('d-none');
+                document.getElementById('nombre-imagen-actual').textContent = rutaImagen.replace('/img/', '');
+            }
+
             document.getElementById('stock').value = juego.stock;
             document.getElementById('precio_arriendo').value = juego.precio_arriendo_usado;
             document.getElementById('precio_venta').value = juego.precio_venta_excelente;
@@ -433,6 +418,20 @@
             document.getElementById('titulo-form').textContent = '✏️ Editar Producto';
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            gameForm.reset();
+            document.getElementById('game-id').value = '';
+            document.getElementById('imagen_actual').value = '';
+            document.getElementById('preview-container').classList.add('d-none');
+            document.getElementById('nombre-imagen-actual').textContent = '';
+            
+            document.getElementById('consola').disabled = false;
+            
+            document.getElementById('btn-cancel').classList.add('d-none');
+            document.getElementById('btn-save').textContent = 'GUARDAR PRODUCTO';
+            document.getElementById('titulo-form').textContent = '🛠️ Nuevo Producto';
         }
 
         async function eliminarJuego(id) {
@@ -465,6 +464,62 @@
             document.getElementById('btn-cancel').classList.add('d-none');
             document.getElementById('btn-save').textContent = 'GUARDAR PRODUCTO';
             document.getElementById('titulo-form').textContent = '🛠️ Nuevo Producto';
+        }
+
+        function exportarExcel() {
+            if (inventario.length === 0) return alert("No hay datos para exportar.");
+            
+            // Filtramos la data para que el Excel no lleve basura HTML
+            const datosLimpios = inventario.map(juego => ({
+                "ID": juego.id,
+                "Título": juego.titulo,
+                "Tipo": juego.tipo,
+                "Plataforma": juego.consola === 'Propia' ? 'Física' : juego.consola,
+                "Stock": juego.stock,
+                "Precio Arriendo (CLP)": juego.precio_arriendo_usado,
+                "Precio Venta (CLP)": juego.precio_venta_excelente
+            }));
+
+            const hoja = XLSX.utils.json_to_sheet(datosLimpios);
+            const libro = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(libro, hoja, "Inventario_RetroPlay");
+            XLSX.writeFile(libro, "Reporte_Stock_Admin.xlsx");
+        }
+
+        function exportarPDF() {
+            if (inventario.length === 0) return alert("No hay datos para exportar.");
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("REPORTE DE INVENTARIO - RETROPLAY", 14, 20);
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Generado el: ${new Date().toLocaleDateString('es-CL')}`, 14, 28);
+
+            // Armamos las filas para la tabla del PDF
+            const filas = inventario.map(j => [
+                j.id, 
+                j.titulo, 
+                j.tipo, 
+                j.consola === 'Propia' ? 'Física' : j.consola, 
+                j.stock, 
+                `$${Number(j.precio_arriendo_usado).toLocaleString('es-CL')}`, 
+                `$${Number(j.precio_venta_excelente).toLocaleString('es-CL')}`
+            ]);
+
+            doc.autoTable({
+                head: [['ID', 'Título', 'Tipo', 'Plataforma', 'Stock', 'Arriendo', 'Venta']],
+                body: filas,
+                startY: 35,
+                theme: 'grid',
+                headStyles: { fillColor: [21, 23, 30] } // Gris oscuro combinando con el Admin
+            });
+
+            doc.save("Reporte_Stock_Admin.pdf");
         }
 
         function mostrarMensaje(texto, tipo) {
